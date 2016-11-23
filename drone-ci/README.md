@@ -9,7 +9,6 @@ The setup requires Terraform (it has been tested with version 0.7.x) and Ansible
 
 In order to create the Drone instance in AWS just follow the steps:
 
-- Clone this repository
 - Create a sample terraform file (main.tf or similar):
 
 ```
