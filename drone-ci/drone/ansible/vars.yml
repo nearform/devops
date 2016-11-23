@@ -1,0 +1,20 @@
+---
+# docker
+docker_apt_key_id: "58118E89F3A912897C070ADBF76221572C52609D"
+docker_apt_key_url: "hkp://p80.pool.sks-keyservers.net:80"
+docker_apt_repo_url: "https://apt.dockerproject.org/repo ubuntu-xenial main"
+
+# apt packages
+apt_packages:
+  - apt-transport-https
+  - ca-certificates
+  - htop
+  - docker-engine
+  - python-dev
+  - python-pip
+
+# drone
+system_data_dir: "/data"
+drone_local_dir_path: "{{ system_data_dir }}/drone"
+drone_github_client_id: "6e68affe3bd65691db78"
+drone_github_client_secret: "bb58fb17f9b9b43fccbfd0886fb1a98364f9b26c"

@@ -1,0 +1,131 @@
+---
+- hosts: drone
+  remote_user: ubuntu
+  gather_facts: False
+  vars_files:
+    - vars.yml
+  # hack for ubuntu 16.04
+  vars:
+    ansible_python_interpreter: "/usr/bin/python2.7"
+  tasks:
+    # wait for host to be available
+    - name: waiting for server to accept SSH connections
+      local_action:
+        wait_for host="{{ inventory_hostname }}"
+        port=22
+        state=started
+        timeout=300
+    # hacks for ubuntu 16.04
+    - name: update apt cache
+      raw: "sudo apt-get update -qq "
+    - name: install python 2.7 and aptitude
+      raw: "sudo apt-get install -qq python2.7 aptitude"
+    - name: get instance hostname
+      shell:
+        cmd: cat /etc/hostname
+      register: instance_hostname
+    - name: add hostname to /etc/hosts
+      shell:
+        cmd: echo "127.0.0.1 {{ instance_hostname }}" | sudo tee -a /etc/hosts
+    - name: check external volume fs type
+      become: yes
+      filesystem:
+        fstype: ext4
+        dev: /dev/xvdh
+    - name: mount data disk
+      become: yes
+      mount:
+        name: "{{ system_data_dir }}"
+        src: /dev/xvdh
+        fstype: ext4
+        opts: rw
+        state: mounted
+    - name: set permissions to data folder
+      become: yes
+      file:
+        path: "{{ system_data_dir }}"
+        owner: ubuntu
+        group: ubuntu
+        mode: "g=rwx,o=rwx"
+    - name: add docker repo key with apt
+      become: yes
+      apt_key:
+        id: "{{ docker_apt_key_id }}"
+        keyserver: "{{ docker_apt_key_url }}"
+        state: present
+    - name: add docker repository to sources.list
+      shell:
+        cmd: echo "deb https://apt.dockerproject.org/repo ubuntu-xenial main" | sudo tee /etc/apt/sources.list.d/docker.list
+    - name: update apt cache
+      become: yes
+      apt:
+        update_cache: yes
+    - name: upgrade to latest
+      become: yes
+      apt:
+        upgrade: safe
+    - name: update kernel
+      raw: "sudo apt-get install -qq linux-image-extra-$(uname -r) linux-image-extra-virtual"
+    - name: install docker and extra apt packages
+      become: yes
+      apt:
+        pkg: "{{ item }}"
+        state: present
+      with_items: "{{ apt_packages }}"
+    - name: install docker-py
+      become: yes
+      pip:
+        name: "docker-py"
+        version: "1.9.0"
+      environment:
+        LC_ALL: "C"
+    - name: add `ubuntu` to docker group
+      user:
+        append: yes
+        groups: docker
+        name: ubuntu
+      become: yes
+    - name: create drone directory
+      become: yes
+      file:
+        path: "{{ drone_local_dir_path }}"
+        state: directory
+    - name: create drone data directory
+      become: yes
+      file:
+        path: "{{ drone_local_dir_path }}/data"
+        state: directory
+    # needed if instance changes
+    # - name: change data file ownership
+    #   become: yes
+    #   file:
+    #     path: "{{ drone_local_dir_path }}/data/drone.sqlite"
+    #     owner: "ubuntu"
+    #     group: "ubuntu"
+    #     mode: 0777
+    #   ignore_errors: yes # if file doesn't exist
+    - name: copy drone config file
+      become: yes
+      template:
+        src: ./dronerc_tmpl.j2
+        dest: "{{ drone_local_dir_path }}/dronerc"
+    - name: pull drone image
+      become: yes
+      docker_image:
+        name: drone/drone
+        tag: 0.4
+        state: present
+    - name: run drone container
+      become: yes
+      docker_container:
+        name: drone
+        image: drone/drone:0.4
+        pull: yes
+        restart_policy: always
+        restart: yes
+        volumes:
+          - "{{ drone_local_dir_path }}/data:/var/lib/drone"
+          - /var/run/docker.sock:/var/run/docker.sock
+        env_file: "{{ drone_local_dir_path }}/dronerc"
+        published_ports:
+          - 80:8000
