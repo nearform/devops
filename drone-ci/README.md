@@ -22,8 +22,6 @@ output "drone-ip" {
 }
 ```
 
-Bear in mind that the identity of that key has to be added to your local `ssh-agent` so Ansible can ssh into the machine without being prompted for password.
-
 - Setup your github OAuth app by clicking on settings in Github and then OAuth applications. In the top right there is a button to register a new application. Don't worry about the callback url, we will come back to it later (just enter some random url).
 
 - Once you finished registering the new Github will provide you with a client ID (displayed in the image above) and a client secret (clicking in the app link). Now we need to setup two environment variables with those values that Ansible will read to provision the drone machine:
@@ -53,10 +51,12 @@ terraform output drone-ip
 
 Now go to github -> settings -> OAuth applications and visit the Drone app that was creted before.
 
-There is one field called `Authorization callback URL`. This field needs to point to your Drone instance. In this case we are not using a DNS so, assuming that the output from terraform is the IP 37.50.42.57, the value for your callback URL will be `http://37.50.42.57/authorize`. This allows Drone
+There is one field called `Authorization callback URL`. This field needs to point to your Drone instance. In this case we are not using a DNS so, assuming that the output from terraform is the IP `37.50.42.57`, the value for your callback URL will be `http://37.50.42.57/authorize`. This allows Drone
 to setup the OAuth flow with Github for authorizations.
 
-Once this is done, browse the IP from above and you are done. From now on, you can access to Drone and it is connected to your Github account.
+Once this is done, browse the IP from above and you are done.
+
+From now on, you can access to Drone and it is connected to your Github account.
 
 ## Security Considerations
 
