@@ -60,9 +60,9 @@ resource "aws_key_pair" "user" {
   public_key = "${var.user_public_key}"
 }
 
-resource "aws_security_group" "ssh-drone" {
-  name = "ssh-drone"
-  description = "minimal security group fro drone setup"
+resource "aws_security_group" "drone" {
+  name = "Drone"
+  description = "minimal security group for drone setup"
   vpc_id = "${var.drone_subnet_id}"
   ingress {
     from_port = 22
@@ -106,7 +106,7 @@ resource "aws_instance" "drone" {
   availability_zone = "${data.aws_availability_zones.available-zones.names[0]}"
   subnet_id = "${var.drone_subnet_id}"
   vpc_security_group_ids = [
-    "${aws_security_group.ssh-drone.id}"
+    "${aws_security_group.drone.id}"
   ]
   private_ip = "${var.drone_private_ip}"
   tags {
