@@ -16,5 +16,5 @@ apt_packages:
 # drone
 system_data_dir: "/data"
 drone_local_dir_path: "{{ system_data_dir }}/drone"
-drone_github_client_id: "6e68affe3bd65691db78"
-drone_github_client_secret: "bb58fb17f9b9b43fccbfd0886fb1a98364f9b26c"
+drone_github_client_id: "{{ lookup('env', 'DRONE_GITHUB_CLIENT_ID') }}"
+drone_github_client_secret: "{{ lookup('env', 'DRONE_GITHUB_CLIENT_SECRET') }}"

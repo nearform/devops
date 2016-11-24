@@ -72,6 +72,14 @@ resource "aws_security_group" "ssh-drone" {
      "0.0.0.0/0"
     ]
   }
+  ingress {
+    from_port = 80
+    to_port = 8000
+    protocol = "tcp"
+    cidr_blocks = [
+     "0.0.0.0/0"
+    ]
+  }
   egress {
     from_port = 0
     to_port = 0
@@ -111,6 +119,10 @@ resource "aws_volume_attachment" "default" {
   volume_id = "${aws_ebs_volume.drone-volume.id}"
   instance_id = "${aws_instance.drone.id}"
   force_detach = true
+
+  provisioner "local-exec" {
+    command = "echo \"[drone]\n${aws_instance.drone.public_ip}\" > /tmp/inventory; ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i /tmp/inventory ${path.module}/ansible/play.yml"
+  }
 }
 
 output "drone-dns" {
