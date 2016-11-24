@@ -4,10 +4,3 @@ module "drone" {
   drone_security_groups = ["sg-799ac311"]
 }
 
-output "drone-ssh" {
-  value = "ubuntu@${module.drone.drone-dns}"
-}
-
-output "drone-ip" {
-  value = "${module.drone.drone-ip}"
-}
