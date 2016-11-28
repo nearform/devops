@@ -8,16 +8,15 @@
   vars:
     ansible_python_interpreter: "/usr/bin/python2.7"
   tasks:
-    # wait for host to be available
+    # wait for hgost to be available
     - name: waiting for server to accept SSH connections
       local_action:
         wait_for host="{{ inventory_hostname }}"
         port=22
         state=started
-        timeout=300
     # hacks for ubuntu 16.04
     - name: update apt cache
-      raw: "sudo apt-get update -qq "
+      raw: "sudo apt-get update"
     - name: install python 2.7 and aptitude
       raw: "sudo apt-get install -qq python2.7 aptitude"
     - name: get instance hostname
