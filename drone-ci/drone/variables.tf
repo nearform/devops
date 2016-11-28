@@ -77,3 +77,13 @@ variable "drone_private_ip" {
   type = "string"
   default = ""
 }
+
+variable "ansible_user" {
+  type = "string"
+  default = "ubuntu"
+}
+
+variable "ansible_inventory_path" {
+  type = "string"
+  default = "/tmp/inventory"
+}
