@@ -14,10 +14,8 @@
         wait_for host="{{ inventory_hostname }}"
         port=22
         state=started
-        timeout=300
-    # hacks for ubuntu 16.04
     - name: update apt cache
-      raw: "sudo apt-get update -qq "
+      raw: "sudo apt-get update"
     - name: install python 2.7 and aptitude
       raw: "sudo apt-get install -qq python2.7 aptitude"
     - name: get instance hostname
@@ -95,15 +93,6 @@
       file:
         path: "{{ drone_local_dir_path }}/data"
         state: directory
-    # needed if instance changes
-    # - name: change data file ownership
-    #   become: yes
-    #   file:
-    #     path: "{{ drone_local_dir_path }}/data/drone.sqlite"
-    #     owner: "ubuntu"
-    #     group: "ubuntu"
-    #     mode: 0777
-    #   ignore_errors: yes # if file doesn't exist
     - name: copy drone config file
       become: yes
       template:
