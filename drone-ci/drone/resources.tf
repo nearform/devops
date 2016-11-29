@@ -46,7 +46,7 @@ resource "aws_ebs_volume" "drone-volume" {
   type = "${var.aws_volume_type}"
   size = "${var.drone_volume_size}"
   tags {
-    Name = "Drone CI"
+    Name = "${var.aws_volume_tag}"
   }
 }
 
@@ -61,7 +61,7 @@ resource "aws_instance" "drone" {
   ]
   private_ip = "${var.drone_private_ip}"
   tags {
-      Name = "${var.aws_instance_tags}"
+      Name = "${var.aws_instance_tag}"
   }
 }
 
@@ -73,8 +73,13 @@ resource "aws_volume_attachment" "default" {
 
   provisioner "local-exec" {
     command = <<EOF
-      echo "[drone]\n${aws_instance.drone.public_ip}" > ${var.ansible_inventory_path};
-      ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i ${var.ansible_inventory_path} ${path.module}/ansible/play.yml
+      if [ 1 -eq ${var.provision_through_private_ip} ]
+      then
+        echo "[drone]\n${aws_instance.drone.private_ip}" > ${var.ansible_inventory_path};
+      else
+        echo "[drone]\n${aws_instance.drone.public_ip}" > ${var.ansible_inventory_path};
+      fi
+      ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i ${var.ansible_inventory_path} --private-key ${var.private_key_path} ${path.module}/ansible/play.yml
     EOF
   }
 }

@@ -25,12 +25,12 @@ variable "aws_volume_type" {
   default = "gp2"
 }
 
-variable "aws_instance_tags" {
+variable "aws_instance_tag" {
   type = "string"
   default = "Drone CI"
 }
 
-variable "aws_volume_tags" {
+variable "aws_volume_tag" {
   type = "string"
   default = "Drone CI"
 }
@@ -48,10 +48,6 @@ variable "aws_security_group_name" {
 
 variable "drone_volume_size" {
   default = "8"
-}
-
-variable "public_ssh_key" {
-  type = "string"
 }
 
 variable "public_ssh_key_name" {
@@ -86,4 +82,16 @@ variable "ansible_user" {
 variable "ansible_inventory_path" {
   type = "string"
   default = "/tmp/inventory"
+}
+
+variable "private_key_path" {
+  type = "string"
+}
+
+variable "public_ssh_key" {
+  type = "string"
+}
+
+variable "provision_through_private_ip" {
+  default = false
 }
