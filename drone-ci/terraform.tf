@@ -9,3 +9,7 @@ module "drone" {
 output "drone-ip" {
   value = "${module.drone.drone-ip}"
 }
+
+output "reprovision-command" {
+  value = "${module.drone.reprovision-command}"
+}
