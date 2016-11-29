@@ -13,7 +13,7 @@ In order to create the Drone instance in AWS just follow the steps:
 
 ```
 module "drone" {
-  source = "https://www.github.com/nearform/labs-devos//drone-ci/drone"
+  source = "https://www.github.com/nearform/labs-devops//drone-ci/drone"
   public_ssh_key = "<your-public-key>"
 }
 
