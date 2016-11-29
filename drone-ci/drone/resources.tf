@@ -7,8 +7,8 @@ provider "aws" {
 }
 
 resource "aws_key_pair" "user" {
-  key_name = "${var.public_ssh_key_name}"
-  public_key = "${var.public_ssh_key}"
+  key_name = "${var.keypair_name}"
+  public_key = "${var.keypair_key}"
 }
 
 resource "aws_security_group" "drone" {
@@ -51,7 +51,7 @@ resource "aws_ebs_volume" "drone-volume" {
 }
 
 resource "aws_instance" "drone" {
-  key_name = "${var.public_ssh_key_name}"
+  key_name = "${var.keypair_name}"
   ami = "${var.aws_base_ami}"
   instance_type = "${var.aws_instance_type}"
   availability_zone = "${data.aws_availability_zones.available-zones.names[0]}"
@@ -73,7 +73,7 @@ resource "aws_volume_attachment" "default" {
 
   provisioner "local-exec" {
     command = <<EOF
-      if [ 1 -eq ${var.provision_through_private_ip} ]
+      if [ 1 -eq ${var.use_private_ip_to_provision} ]
       then
         echo "[drone]\n${aws_instance.drone.private_ip}" > ${var.ansible_inventory_path};
       else
