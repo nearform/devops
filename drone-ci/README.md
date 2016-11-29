@@ -15,12 +15,14 @@ In order to create the Drone instance in AWS just follow the steps:
 module "drone" {
   source = "github.com/nearform/labs-devops//drone-ci/drone"
   public_ssh_key = "<your-public-key>"
+  provision_through_private_ip = false
 }
 
 output "drone-ip" {
   value = "${module.drone.drone-ip}"
 }
 ```
+(You can alter the flag `provision_through_private_ip` and set it to true if you want to provision from within the same network in AWS)
 
 - Setup your github OAuth app by clicking on settings in Github and then OAuth applications. In the top right there is a button to register a new application. Don't worry about the callback url, we will come back to it later (just enter some random url).
 
