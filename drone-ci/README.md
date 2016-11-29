@@ -65,4 +65,4 @@ From now on, you can access to Drone and it is connected to your Github account.
 By default, this module creates a security group allowing traffic from every source into the port 80 (for HTTP) and into
 the port 22 (for SSH).
 
-The security group associated to it is called `Drone` in the AWS console so customize it as you need.
+The security group associated to it is called `Drone security group` in the AWS console so customize it as you need.
