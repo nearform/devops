@@ -73,8 +73,8 @@ resource "aws_volume_attachment" "default" {
 
   provisioner "local-exec" {
     command = <<EOF
-      echo "[drone]\n${aws_instance.drone.public_ip}" > /tmp/inventory;
-      ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i /tmp/inventory ${path.module}/ansible/play.yml
+      echo "[drone]\n${aws_instance.drone.public_ip}" > ${var.ansible_inventory_path};
+      ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i ${var.ansible_inventory_path} ${path.module}/ansible/play.yml
     EOF
   }
 }

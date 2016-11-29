@@ -8,13 +8,12 @@
   vars:
     ansible_python_interpreter: "/usr/bin/python2.7"
   tasks:
-    # wait for hgost to be available
+    # wait for host to be available
     - name: waiting for server to accept SSH connections
       local_action:
         wait_for host="{{ inventory_hostname }}"
         port=22
         state=started
-    # hacks for ubuntu 16.04
     - name: update apt cache
       raw: "sudo apt-get update"
     - name: install python 2.7 and aptitude
@@ -94,15 +93,6 @@
       file:
         path: "{{ drone_local_dir_path }}/data"
         state: directory
-    # needed if instance changes
-    # - name: change data file ownership
-    #   become: yes
-    #   file:
-    #     path: "{{ drone_local_dir_path }}/data/drone.sqlite"
-    #     owner: "ubuntu"
-    #     group: "ubuntu"
-    #     mode: 0777
-    #   ignore_errors: yes # if file doesn't exist
     - name: copy drone config file
       become: yes
       template:
