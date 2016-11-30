@@ -39,6 +39,10 @@ resource "aws_security_group" "drone" {
       "0.0.0.0/0"
     ]
   }
+
+  tags {
+    Name = "${var.aws_security_group_name}"
+  }
 }
 
 resource "aws_ebs_volume" "drone-volume" {
@@ -75,9 +79,9 @@ resource "aws_volume_attachment" "default" {
     command = <<EOF
       if [ 1 -eq ${var.use_private_ip_to_provision} ]
       then
-        echo "[drone]\n${aws_instance.drone.private_ip}" > ${var.ansible_inventory_path};
+        echo -e "[drone]\n${aws_instance.drone.private_ip}" > ${var.ansible_inventory_path};
       else
-        echo "[drone]\n${aws_instance.drone.public_ip}" > ${var.ansible_inventory_path};
+        echo -e "[drone]\n${aws_instance.drone.public_ip}" > ${var.ansible_inventory_path};
       fi
       ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i ${var.ansible_inventory_path} --private-key ${var.private_key_path} ${path.module}/ansible/play.yml
     EOF
