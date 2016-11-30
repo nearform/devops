@@ -35,6 +35,7 @@ variable "aws_volume_tag" {
   default = "Drone CI"
 }
 
+// TODO - it's possible to query this automatically 
 variable "aws_base_ami" {
   # Ubuntu 16.04 amd64 server - 2016-08-30
   # Root device type: ebs
@@ -50,19 +51,21 @@ variable "drone_volume_size" {
   default = "8"
 }
 
-variable "public_ssh_key_name" {
+variable "keypair_name" {
   type = "string"
-  default = "ssh_key"
+  default = "drone-ssh-key"
+}
+
+variable "keypair_key" {
+  type = "string"
 }
 
 variable "drone_subnet_id" {
   type = "string"
-  default = ""
 }
 
 variable "drone_vpc_id" {
   type = "string"
-  default = ""
 }
 
 variable "drone_security_groups" {
@@ -88,10 +91,6 @@ variable "private_key_path" {
   type = "string"
 }
 
-variable "public_ssh_key" {
-  type = "string"
-}
-
-variable "provision_through_private_ip" {
+variable "use_private_ip_to_provision" {
   default = false
 }
