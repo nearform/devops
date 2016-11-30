@@ -39,6 +39,10 @@ resource "aws_security_group" "drone" {
       "0.0.0.0/0"
     ]
   }
+
+  tags {
+    Name = "${var.aws_security_group_name}"
+  }
 }
 
 resource "aws_ebs_volume" "drone-volume" {
