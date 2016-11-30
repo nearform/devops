@@ -25,7 +25,7 @@ resource "aws_security_group" "drone" {
   }
   ingress {
     from_port = 80
-    to_port = 8000
+    to_port = 80
     protocol = "tcp"
     cidr_blocks = [
      "0.0.0.0/0"
