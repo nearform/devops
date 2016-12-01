@@ -6,4 +6,4 @@ Please feel free to raise bugs or PRs to improve functionality.
 
 # License
 
-Copyright (c) 2016, David Gonzalez. Licensed under [MIT](./LICENSE).
+Copyright (c) 2016, David Gonzalez. All this repository is licensed under [MIT](./LICENSE).
