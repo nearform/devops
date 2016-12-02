@@ -6,7 +6,7 @@ The setup requires Terraform (it has been tested with version 0.7.x) and Ansible
 
 ## Setup
 
-1) Create a `main.tf` terraform file: 
+1) Create a `main.tf` terraform file:
 
 ```
 module "drone" {
@@ -31,6 +31,13 @@ See [variables.tf](./drone/variables.tf) for more information.
 ```
 export DRONE_GITHUB_CLIENT_ID=<your-client-id>
 export DRONE_GITHUB_CLIENT_SECRET=<your-client-secret>
+```
+Alternatively, if you are using an on-premises version of github, instead of configuring
+the `client id` and `secret` variables from above, just pass the full config url in the environment
+variable `DRONE_GITHUB_CONFIG_URL` (which includes `client id` and `secret`):
+
+```
+export DRONE_GITHUB_CONFIG_URL=github.mycompany.com?client_id=<client-id>&client_secret=<client-secret>
 ```
 
 4) Run Terraform:
@@ -64,4 +71,4 @@ the port 22 (for SSH).
 
 The security group associated to it is called `Drone security group` in the AWS console so customize it as you need.
 
-We do not recommend creating a public facing Drone server directly on the internet - instead adopt one of the recommended AWS VPC [patterns](http://docs.aws.amazon.com/AmazonVPC/latest/UserGuide/VPC_Scenario2.html). 
+We do not recommend creating a public facing Drone server directly on the internet - instead adopt one of the recommended AWS VPC [patterns](http://docs.aws.amazon.com/AmazonVPC/latest/UserGuide/VPC_Scenario2.html).
