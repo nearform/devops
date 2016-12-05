@@ -93,6 +93,11 @@
       file:
         path: "{{ drone_local_dir_path }}/data"
         state: directory
+    - name: copy .netrc
+      become: yes
+      template:
+        src: ~/.netrc
+        dest: "{{ drone_local_dir_path }}/.netrc"
     - name: copy drone config file
       become: yes
       template:
@@ -114,6 +119,7 @@
         restart: yes
         volumes:
           - "{{ drone_local_dir_path }}/data:/var/lib/drone"
+          - /home/ec2-user/.netrc:/home/ubuntu/.netrc
           - /var/run/docker.sock:/var/run/docker.sock
         env_file: "{{ drone_local_dir_path }}/dronerc"
         published_ports:
