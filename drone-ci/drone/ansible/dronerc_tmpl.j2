@@ -1,4 +1,8 @@
 REMOTE_DRIVER=github
-REMOTE_CONFIG={{ github_remote_config_url }}
+{% if lookup('env', 'DRONE_GITHUB_CONFIG_URL') %}
+REMOTE_CONFIG={{ lookup('env', 'DRONE_GITHUB_CONFIG_URL') }}
+{% else %}
+REMOTE_CONFIG={{ github_default_config_url }}
+{% endif %}
 DATABASE_DRIVER=sqlite3
 DATABASE_CONFIG=/var/lib/drone/drone.sqlite
