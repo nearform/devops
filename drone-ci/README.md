@@ -1,6 +1,6 @@
 # drone-ci
 
-This is a Terraform module to provision infrastructure for a [Drone](https://drone.ip) CI server in AWS.
+This is a Terraform module to provision infrastructure for a [Drone](https://drone.io) CI server in AWS.
 
 The setup requires Terraform (it has been tested with version 0.7.x) and Ansible (any version but tested with 2.1.X).
 
