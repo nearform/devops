@@ -26,11 +26,10 @@ the required configuration is stored per project in a file called .drone.yaml in
 root of the project:
 ```
 build:
-  image: golang
+  image: node
   commands:
-    - go get
-    - go build
-    - go test
+    - npm install --development
+    - npm test
 ```
 
 This example, will instruct drone to build a container with the base image golang
@@ -68,12 +67,12 @@ deploy:
       - docker pull 1234567890.dkr.ecr.eu-central-1.amazonaws.com/your-repo:latest
       - docker stop drone-lab
       - docker rm drone-lab
-      - docker run -d -p 3000:3000 --name drone-lab 711655675495.dkr.ecr.eu-central-1.amazonaws.com/drone-lab:latest
+      - docker run -d -p 3000:3000 --name drone-lab 1234567890.dkr.ecr.eu-central-1.amazonaws.com/drone-lab:latest
 ```
 
 Let's explain the sections from above and how the correlate to the steps:
 - **build**: In this section we specify how to test our build. We only specify the commands to run our tests. Drone will take care of building the container to do it so.
-- **publish**: In this section we use the plugin `drone-ecr` to push the container specified in our `Dockerfile` to the Amazon Container Registry (ECS).
+- **publish**: In this section we use the plugin `drone-ecr` to push the container specified in our `Dockerfile` to the Amazon Container Registry (ECR).
 - **deploy**: In this section we are using the plugin `drone-ssh` to run commands in the `target host`.
 
 As you can see, the publish and deploy steps are relying on plugins. You can find more information
@@ -86,7 +85,7 @@ Customize the yaml from above in order to match your requirements.
 ## Managing secrets in Drone
 
 As you can see in the example from above, we use the `$$` notation to inject
-secrets into our configuration. The way on how Drone 0.4 works with secrets is
+secrets into our configuration. How Drone 0.4 works with secrets is
 fairly simple:
 - We create a yaml file with our secrets
 - Drone encrypts the secrets
