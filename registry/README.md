@@ -26,6 +26,14 @@ and they have to be generated previously with the [right information](https://do
 Those files need to be placed on the machine that is running the terraform script
 from above.
 
+In order to create self signed certs [this link will](http://serverfault.com/questions/224122/what-is-crt-and-key-and-how-can-i-generate-them) give you a straight answer:
+```
+openssl genrsa 1024 > host.key
+chmod 400 host.key
+openssl req -new -x509 -nodes -sha1 -days 365 -key host.key -out host.cert
+```
+But if what you want is know what is going under the hood, please read [this tutorial](http://www.thegeekstuff.com/2009/07/linux-apache-mod-ssl-generate-key-csr-crt-file/).
+
 Once the environment variables are setup just run terraform:
 ```
 terraform apply
