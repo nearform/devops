@@ -83,11 +83,48 @@
         groups: docker
         name: ubuntu
       become: yes
+    - name: create ssl certs folder
+      become: yes
+      file:
+        path: "{{ ssl_certs_dir_path }}"
+        state: "directory"
+    - name: update permissions on ssl certs folder
+      become: yes
+      file:
+        path: "{{ ssl_certs_dir_path }}"
+        mode: "g=rwx,o=rwx"
+    - name: copy ssl certficate
+      become: yes
+      copy:
+        src: "{{ ssl_crt_file }}"
+        dest: "{{ ssl_certs_dir_path }}/registry-certificate.crt"
+    - name: copy ssl key
+      become: yes
+      copy:
+        src: "{{ ssl_key_file }}"
+        dest: "{{ ssl_certs_dir_path }}/registry-key.key"
     - name: create registry directory
       become: yes
       file:
         path: "{{ registry_local_dir_path }}"
         state: directory
+        owner: ubuntu
+        group: ubuntu
+    - name: create auth directory
+      become: yes
+      file:
+        path: "{{ auth_local_dir_path }}"
+        state: directory
+        owner: ubuntu
+        group: ubuntu
+    - name: generate initial auth
+      become: yes
+      command: "docker run --entrypoint htpasswd registry:2 -Bbn {{ registry_user }} {{ registry_password }}"
+      register: auth_result
+    - name: save auth
+      copy:
+        content: "{{ auth_result.stdout }}"
+        dest: "{{ auth_local_dir_path }}/passwd"
     - name: pull registry image
       become: yes
       docker_image:
@@ -102,8 +139,17 @@
         pull: yes
         restart_policy: always
         restart: yes
+        env:
+          REGISTRY_HTTP_TLS_CERTIFICATE: "{{ ssl_certs_dir_path }}/registry-certificate.crt"
+          REGISTRY_HTTP_TLS_KEY: "{{ ssl_certs_dir_path }}/registry-key.key"
+          REGISTRY_AUTH: "htpasswd"
+          REGISTRY_AUTH_HTPASSWD_REALM: "Registry Realm"
+          REGISTRY_AUTH_HTPASSWD_PATH: "{{ auth_local_dir_path }}/passwd"
+          REGISTRY_HTTP_SECRET: "{{ registry_http_secret }}"
         volumes:
           - "{{ registry_local_dir_path }}:/var/lib/registry"
           - /var/run/docker.sock:/var/run/docker.sock
+          - "{{ ssl_certs_dir_path }}:{{ ssl_certs_dir_path }}"
+          - "{{ auth_local_dir_path }}:{{ auth_local_dir_path }}"
         published_ports:
           - 5000:5000
