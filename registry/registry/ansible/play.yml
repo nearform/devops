@@ -4,7 +4,6 @@
   gather_facts: False
   vars_files:
     - vars.yml
-  # hack for ubuntu 16.04
   vars:
     ansible_python_interpreter: "/usr/bin/python2.7"
   tasks:
