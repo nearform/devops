@@ -1,8 +1,22 @@
-REMOTE_DRIVER=github
-{% if lookup('env', 'DRONE_GITHUB_CONFIG_URL') %}
-REMOTE_CONFIG={{ lookup('env', 'DRONE_GITHUB_CONFIG_URL') }}
+DRONE_GITHUB=true
+{% if lookup('env', 'DRONE_OPEN') %}
+DRONE_OPEN={{ drone_open }}
 {% else %}
-REMOTE_CONFIG={{ github_default_config_url }}
+DRONE_OPEN=true
 {% endif %}
-DATABASE_DRIVER=sqlite3
-DATABASE_CONFIG=/var/lib/drone/drone.sqlite
+{% if lookup('env', 'DRONE_ADMIN') %}
+DRONE_ADMIN={{ drone_admin }}
+{% endif %}
+{% if lookup('env', 'DRONE_AGENT_SECRET') %}
+DRONE_AGENT_SECRET={{ drone_agent_secret }}
+{% else %}
+DRONE_AGENT_SECRET={{ range(1000000, 2000000) | random }}
+{% endif %}
+{% if lookup('env', 'DRONE_GITHUB_URL') %}
+DRONE_GITHUB_URL={{ drone_github_config_url }}
+DRONE_GITHUB_PRIVATE_MODE=true
+{% else %}
+DRONE_GITHUB_URL=https://github.com
+{% endif %}
+DRONE_GITHUB_CLIENT={{ drone_github_client_id }}
+DRONE_GITHUB_SECRET={{ drone_github_client_secret }}

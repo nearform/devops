@@ -102,13 +102,13 @@
       become: yes
       docker_image:
         name: drone/drone
-        tag: 0.4
+        tag: 0.5
         state: present
     - name: run drone container
       become: yes
       docker_container:
         name: drone
-        image: drone/drone:0.4
+        image: drone/drone:0.5
         pull: yes
         restart_policy: always
         restart: yes
