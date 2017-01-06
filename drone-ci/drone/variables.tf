@@ -35,7 +35,7 @@ variable "aws_volume_tag" {
   default = "Drone CI"
 }
 
-// TODO - it's possible to query this automatically 
+// TODO - it's possible to query this automatically
 variable "aws_base_ami" {
   # Ubuntu 16.04 amd64 server - 2016-08-30
   # Root device type: ebs

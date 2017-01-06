@@ -7,11 +7,7 @@ DRONE_OPEN=true
 {% if lookup('env', 'DRONE_ADMIN') %}
 DRONE_ADMIN={{ drone_admin }}
 {% endif %}
-{% if lookup('env', 'DRONE_AGENT_SECRET') %}
 DRONE_AGENT_SECRET={{ drone_agent_secret }}
-{% else %}
-DRONE_AGENT_SECRET={{ range(1000000, 2000000) | random }}
-{% endif %}
 {% if lookup('env', 'DRONE_GITHUB_URL') %}
 DRONE_GITHUB_URL={{ drone_github_config_url }}
 DRONE_GITHUB_PRIVATE_MODE=true

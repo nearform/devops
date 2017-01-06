@@ -98,6 +98,11 @@
       template:
         src: ./dronerc_tmpl.j2
         dest: "{{ drone_local_dir_path }}/dronerc"
+    - name: copy drone agent config file
+      become: yes
+      template:
+        src: ./drone_agentrc_tmpl.j2
+        dest: "{{ drone_local_dir_path }}/drone_agentrc"
     - name: pull drone image
       become: yes
       docker_image:
@@ -105,9 +110,10 @@
         tag: 0.5
         state: present
     - name: run drone container
-      become: yes
       docker_container:
-        name: drone
+        name: drone-server
+        network_mode: host
+        #command: server
         image: drone/drone:0.5
         pull: yes
         restart_policy: always
@@ -118,3 +124,15 @@
         env_file: "{{ drone_local_dir_path }}/dronerc"
         published_ports:
           - 80:8000
+    - name: run drone agent
+      docker_container:
+        name: drone-agent
+        network_mode: host
+        command: agent
+        image: drone/drone:0.5
+        pull: yes
+        restart_policy: always
+        restart: yes
+        volumes:
+          - /var/run/docker.sock:/var/run/docker.sock
+        env_file: "{{ drone_local_dir_path }}/drone_agentrc"
