@@ -31,6 +31,7 @@ See [variables.tf](./drone/variables.tf) for more information.
 ```
 export DRONE_GITHUB_CLIENT_ID=<your-client-id>
 export DRONE_GITHUB_CLIENT_SECRET=<your-client-secret>
+export DRONE_SECRET=<your-drone-secret(random generated string)>
 ```
 Alternatively, if you are using an on-premises version of github, instead of configuring
 the `client id` and `secret` variables from above, just pass the full config url in the environment

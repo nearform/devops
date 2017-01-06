@@ -7,7 +7,7 @@ DRONE_OPEN=true
 {% if lookup('env', 'DRONE_ADMIN') %}
 DRONE_ADMIN={{ drone_admin }}
 {% endif %}
-DRONE_AGENT_SECRET={{ drone_agent_secret }}
+DRONE_AGENT_SECRET=my-$ecret
 {% if lookup('env', 'DRONE_GITHUB_URL') %}
 DRONE_GITHUB_URL={{ drone_github_config_url }}
 DRONE_GITHUB_PRIVATE_MODE=true
