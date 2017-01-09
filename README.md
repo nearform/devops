@@ -9,11 +9,11 @@ Please feel free to raise bugs or PRs to improve functionality.
 Sponsored by nearForm.
 
 Contributors:
-- David Gonzalez
-- Damian Beresford
-- Matteo Collina
-- Luca Maraschi
-- Valerio Barrila
+- David Gonzalez (david.gonzalez@nearform.com)
+- Damian Beresford (damian.beresford@nearform.com)
+- Matteo Collina (matteo.collina@gmail.com)
+- Luca Maraschi (luca.maraschi@gmail.com)
+- Valerio Barrila (valerio.barrila@gmail.com)
 
 # License
 
