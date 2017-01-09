@@ -4,6 +4,19 @@ related to infrastructure automation and CI/CD.
 
 Please feel free to raise bugs or PRs to improve functionality.
 
+# Credits
+
+Sponsored by nearForm.
+
+Contributors:
+- David Gonzalez (david.gonzalez@nearform.com)
+- Damian Beresford (damian.beresford@nearform.com)
+- Matteo Collina (matteo.collina@gmail.com)
+- Luca Maraschi (luca.maraschi@gmail.com)
+- Valerio Barrila (valerio.barrila@gmail.com)
+
 # License
 
-Copyright (c) 2016, David Gonzalez. All this repository is licensed under [MIT](./LICENSE).
+Copyright (c) 2016 nearForm and labs-devops contributors.
+
+All this repository is licensed under [MIT](./LICENSE).
