@@ -1,5 +1,5 @@
 ---
-- hosts: drone
+- hosts: all
   remote_user: ubuntu
   gather_facts: False
   vars_files:
@@ -14,10 +14,25 @@
         wait_for host="{{ inventory_hostname }}"
         port=22
         state=started
-    - name: update apt cache
-      raw: "sudo apt-get update"
-    - name: install python 2.7 and aptitude
-      raw: "sudo apt-get install -qq python2.7 aptitude"
+    - name: update package list
+      raw: sudo apt-get -y update
+      register: result
+      until: result|success
+      retries: 10
+    - name: install python2
+      raw: sudo apt-get update && sudo apt-get -y install python2.7
+      register: result
+      until: result|success
+      retries: 10
+    - name: install aptitude
+      raw: sudo apt-get update && sudo apt-get -y install aptitude
+      register: result
+      until: result|success
+      retries: 10
+    - name: upgrade to latest
+      become: yes
+      apt:
+        upgrade: safe
     - name: get instance hostname
       shell:
         cmd: cat /etc/hostname
@@ -113,7 +128,6 @@
       docker_container:
         name: drone-server
         network_mode: host
-        #command: server
         image: drone/drone:0.5
         pull: yes
         restart_policy: always
@@ -123,7 +137,7 @@
           - /var/run/docker.sock:/var/run/docker.sock
         env_file: "{{ drone_local_dir_path }}/dronerc"
         published_ports:
-          - 80:8000
+          - 8000:8000
     - name: run drone agent
       docker_container:
         name: drone-agent

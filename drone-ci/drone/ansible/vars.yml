@@ -8,7 +8,6 @@ docker_apt_repo_url: "https://apt.dockerproject.org/repo ubuntu-xenial main"
 apt_packages:
   - apt-transport-https
   - ca-certificates
-  - htop
   - docker-engine
   - python-dev
   - python-pip
