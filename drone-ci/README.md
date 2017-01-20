@@ -4,6 +4,14 @@ This is a Terraform module to provision infrastructure for a [Drone](https://dro
 
 The setup requires Terraform (it has been tested with version 0.7.x) and Ansible (any version but tested with 2.1.X).
 
+#### Dependencies
+
+As you can see in the example some AWS resources needs to be already defined and passed as variables to the module. This will guarantee a nice level of customization and integration with existing infrastructure.
+
+The security group **must** allow connections on port `8000` and `22` for allowing ansible to provision the EC2 instance. Once provisioned you can safely remove the `ingress` rule on port 22 from your security group.
+
+**NOTE:** The module will spawn a drone insance listing on port `8000`
+
 ## Setup
 
 1) Create a `main.tf` terraform file:
@@ -11,10 +19,19 @@ The setup requires Terraform (it has been tested with version 0.7.x) and Ansible
 ```
 module "drone" {
   source = "github.com/nearform/labs-devops//drone-ci/drone"
-  keypair_key = "<your-public-key>"
-  private_key_path = "~/.ssh/id_rsa"
-  drone_vpc_id = "12345"
-  drone_subnet_id = "678910"
+  ssh_key_name = "infra-key"
+  ssh_private_key = "~/.ssh/infra-key.pem"
+  aws_subnet = "subnet_id_1"
+  aws_zone = "eu-west-1a"
+  aws_security_groups = ["sec_group_id_1", "sec_group_id_2"]
+  instance_type = "t2.small"
+  aws_base_ami = "ami-82cf0aed" ## expects an Ubuntu 16.04 AMI id
+  instance_tag = "my-drone-ec2"
+  volume_type = "gp2"
+  volume_size = 10
+  volume_tag = "my-drone-volume"
+  ansible_inventory_path = "/tmp/drone-inventory"
+  use_private_ip_to_provision = false
 }
 
 output "drone-ip" {
@@ -31,6 +48,7 @@ See [variables.tf](./drone/variables.tf) for more information.
 ```
 export DRONE_GITHUB_CLIENT_ID=<your-client-id>
 export DRONE_GITHUB_CLIENT_SECRET=<your-client-secret>
+export DRONE_SECRET=<your-drone-secret(random generated string)>
 ```
 Alternatively, if you are using an on-premises version of github, instead of configuring
 the `client id` and `secret` variables from above, just pass the full config url in the environment
@@ -65,10 +83,5 @@ There is one field called `Authorization callback URL`. This field needs to poin
 Next you need to add `.drone.yml` files to your code repositories, see the [Drone Documentation](http://readme.drone.io/usage/overview/) for more on this.
 
 ## Security Considerations
-
-By default, this module creates a security group allowing traffic from every source into the port 80 (for HTTP) and into
-the port 22 (for SSH).
-
-The security group associated to it is called `Drone security group` in the AWS console so customize it as you need.
 
 We do not recommend creating a public facing Drone server directly on the internet - instead adopt one of the recommended AWS VPC [patterns](http://docs.aws.amazon.com/AmazonVPC/latest/UserGuide/VPC_Scenario2.html).
