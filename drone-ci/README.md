@@ -18,7 +18,7 @@ The security group **must** allow connections on port `8000` and `22` for allowi
 
 ```
 module "drone" {
-  source = "github.com/nearform/labs-devops/drone-ci/drone"
+  source = "github.com/nearform/labs-devops//drone-ci/drone"
   ssh_key_name = "infra-key"
   ssh_private_key = "~/.ssh/infra-key.pem"
   aws_subnet = "subnet_id_1"
