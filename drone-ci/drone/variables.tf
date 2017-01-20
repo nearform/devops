@@ -53,7 +53,6 @@ variable "instance_tag" {
 # ssh
 variable "ssh_key_name" {
   type = "string"
-  default = "sps-ci-bot"
 }
 
 variable "ssh_private_key" {
