@@ -1,6 +1,6 @@
 # This file is only an example. Please see the README.md for more info
 module "drone" {
-  source = "github.com/nearform/labs-devops/drone-ci/drone"
+  source = "github.com/nearform/labs-devops//drone-ci/drone"
   # we reuse a key already create in AWS passing just it's name and the
   # path of the private key used to connect to the machine for provisioning
   ssh_key_name = ""

@@ -4,6 +4,14 @@ This is a Terraform module to provision infrastructure for a [Drone](https://dro
 
 The setup requires Terraform (it has been tested with version 0.7.x) and Ansible (any version but tested with 2.1.X).
 
+#### Dependencies
+
+As you can see in the example some AWS resources needs to be already defined and passed as variables to the module. This will guarantee a nice level of customization and integration with existing infrastructure.
+
+The security group **must** allow connections on port `8000` and `22` for allowing ansible to provision the EC2 instance. Once provisioned you can safely remove the `ingress` rule on port 22 from your security group.
+
+**NOTE:** The module will spawn a drone insance listing on port `8000`
+
 ## Setup
 
 1) Create a `main.tf` terraform file:
