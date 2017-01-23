@@ -34,7 +34,7 @@ resource "aws_volume_attachment" "default" {
       else
         echo "${aws_instance.drone.public_ip}" > ${var.ansible_inventory_path};
       fi
-      ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i ${var.ansible_inventory_path} --private-key ${var.private_key_path} ${path.module}/ansible/play.yml
+      ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i ${var.ansible_inventory_path} --private-key ${var.ssh_private_key} ${path.module}/ansible/play.yml
     EOF
   }
 }
