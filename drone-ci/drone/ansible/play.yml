@@ -125,6 +125,7 @@
         tag: 0.5
         state: present
     - name: run drone container
+      become: yes
       docker_container:
         name: drone-server
         network_mode: host
@@ -139,6 +140,7 @@
         published_ports:
           - 8000:8000
     - name: run drone agent
+      become: yes
       docker_container:
         name: drone-agent
         network_mode: host
