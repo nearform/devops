@@ -14,6 +14,7 @@ Contributors:
 - Matteo Collina (matteo.collina@gmail.com)
 - Luca Maraschi (luca.maraschi@gmail.com)
 - Valerio Barrila (valerio.barrila@gmail.com)
+- Dara Hayes (dara.s.hayes@gmail.com)
 
 # License
 

@@ -1,65 +1,69 @@
 # Drone CD
 
-The purpose of this document is to show how to create a CI/CD pipeline with drone
+This document shows how to create a CI/CD pipeline with Drone
 and Docker.
-
-## Setting up Drone
-
-In order to setup Drone, follow the instructions in [here](../drone-ci/README.md).
-
-Once you are done with it, you should have a running instance of drone in AWS.
 
 ## Prerequisites
 
-You must have installed the CLI tool for drone. You can find the instructions in [here](http://readme.drone.io/devs/cli/).
+You must have installed the CLI tool for Drone. You can find the instructions [here](http://readme.drone.io/0.5/install/cli/).
 
 You also need access to an AWS account.
 
-## Setting up a continuous delivery pipeline
+## Setting up Drone
 
-Drone is built around a powerful concept: containerized plugins. This enables you
-to easily create a plugin by building a docker image. You can find more information
-about it [here](http://drone-python.readthedocs.io/en/latest/writing_a_plugin.html).
+This [document](../drone-ci/README.md) will guide you through setting up an instance of Drone in AWS.
 
-There is no configuration required in the Drone server to make the plugins run. All
-the required configuration is stored per project in a file called .drone.yaml in the
-root of the project:
+## Build your First Project
+There are no build configurations stored in the server. All configuration is stored per-project in a file called `.drone.yml` at the
+root of your project:
+
 ```
-build:
-  image: node
-  commands:
-    - npm install --development
-    - npm test
+pipeline:
+  build:
+    image: node
+    commands:
+      - npm install --development
+      - npm test
 ```
 
-This example, will instruct drone to build a container with the base image golang
-and run the commands specified in the `commands` section.
+This example, defines a pipeline with a step called `build`. The `build` step will start a container using the `node` base image
+and run the given commands inside it. Containers are given access to the build workspace so you can install dependencies, run tests, etc.
 
-In this case, we are going to deploy a **new version of our containerized app** to the remote
-host after a set of tests is successfully run.
+Each build step in Drone is run inside its own container, based off any Docker image you choose. 
+Images can be specified with the standard syntax: `<username>/<image>:tag` and Drone will automatically pull them for you.
+
+This gives us the powerful concept of `containerized plugins`, and makes it very easy to create our own plugin by building a docker image. 
+You can find more information about it [here](http://drone-python.readthedocs.io/en/latest/writing_a_plugin.html).
+
+## Setting up a Continuous Delivery Pipeline
+
+Now we will configure Drone to deploy a **new version of our containerized app** to a remote
+host once the tests have passed.
 
 We are going to have 3 steps:
-- Run the tests
-- Push the container to the AWS Container Registry
-- Deploy the container in a remote machine
+
+1. Run the tests
+2. Push the container to the AWS Container Registry
+3.  Deploy the container to a remote machine
 
 The three steps are translated into the following configuration:
 ```
-build:
-  image: node
-  commands:
-    - npm install --development
-    - npm test
-publish:
-  ecr:
-    access_key: $$ECR_ACCESS_KEY
-    secret_key: $$ECR_SECRET_KEY
+pipeline:
+  build:
+    image: node
+    commands:
+      - npm install --development
+      - npm test
+  publish
+    image: plugins/ecr
+    access_key: $ECR_ACCESS_KEY
+    secret_key: $ECR_SECRET_KEY
     region: eu-central-1
     repo: 1234567890.dkr.ecr.eu-central-1.amazonaws.com/your-repo
     tag: latest
     file: Dockerfile
-deploy:
-  ssh:
+  deploy:
+    image: plugins/ssh
     host: your-target-host.yourcompany.com
     user: ubuntu
     port: 22
@@ -70,47 +74,51 @@ deploy:
       - docker run -d -p 3000:3000 --name drone-lab 1234567890.dkr.ecr.eu-central-1.amazonaws.com/drone-lab:latest
 ```
 
-Let's explain the sections from above and how the correlate to the steps:
-- **build**: In this section we specify how to test our build. We only specify the commands to run our tests. Drone will take care of building the container to do it so.
-- **publish**: In this section we use the plugin `drone-ecr` to push the container specified in our `Dockerfile` to the Amazon Container Registry (ECR).
-- **deploy**: In this section we are using the plugin `drone-ssh` to run commands in the `target host`.
+Let's explain the three steps:
 
-As you can see, the publish and deploy steps are relying on plugins. You can find more information
-about them in the following urls:
+1.  **build** - Here we specify how to test our build.
+2.  **publish** - Here we use the `drone-ecr` plugin to build and push the image specified in our `Dockerfile` to the Amazon Container Registry (ECR).
+3.  **deploy** - Here we use the `drone-ssh` plugin to run commands on the `target host`.
+
+You can find more information about the plugins used in the following urls:
 - [drone-ecr](https://github.com/drone-plugins/drone-ecr)
 - [drone-ssh](https://github.com/drone-plugins/drone-ssh)
 
-Customize the yaml from above in order to match your requirements.
+The official list of Drone plugins can be found [here](http://plugins.drone.io/).
 
 ## Managing secrets in Drone
 
-As you can see in the example from above, we use the `$$` notation to inject
-secrets into our configuration. How Drone 0.4 works with secrets is
-fairly simple:
-- We create a yaml file with our secrets
-- Drone encrypts the secrets
-- Secrets get commited in your project in a file called `.drone.sec` at the same
-level of your `.drone.yaml` file in your project.
+The example above makes use of the secrets `$ECR_ACCESS_KEY` and `ECR_SECRET_KEY`. 
+Drone v0.5 stores secrets in a central store so you don’t need to include them in your Yaml file.
 
-Please be aware that before decrypting secrets, Drone will validate that the signature
-of your `.drone.yaml` file matches with the one stored in your secrets file so, if you
-change the `.drone.yaml` or someone tampers it, your secrets won't get exposed. Yo can find
-more information on how to work with secrets [here](http://readme.drone.io/usage/secrets/).
+The Drone CLI tool is used to persist secrets.
 
-Your secrets file for the example from above should look similar to the following one:
-```
-  environment:
-    ECR_ACCESS_KEY: <your access key>
-    ECR_SECRT_KEY: <your secret key>
+```bash
+drone secret add --image=<image> <githubusername/repo> <variable> <value>
 ```
 
-**Please be very careful to not disclose the secrets file in clear**
-
-Once you have created the file with the appropriated values, we need to encrypt it:
+Example based on the above Yaml file.
+```bash
+drone secret add --image=plugins/ecr githubusername/repo ECR_ACCESS_KEY XXXXXXXXXXXX
+drone secret add --image=plugins/ecr githubusername/repo XXXXXXXXXXXXXXXXXXXXXXXXX
 ```
-drone secure --repo githubusername/github-repository --in secrets.yaml
+
+Secrets are passed to your container as environment variables using the equivalent flags:
+
+```bash
+docker run -e ECR_ACCESS_KEY=XXXXXXXXXXX plugins/ecr
 ```
 
-If you run this command in the root of your project, a new file called `.drone.sec`
-must be present now. Just commit it alongside your code and from now on, Drone will
-inject your secrets into the build.
+## Signature
+
+Secrets are not exposed to the build unless your `.drone.yml` is signed and verified. You can sign `.drone.yml` using the Drone CLI tool.
+
+```bash
+drone sign githubusername/repo
+```
+
+This results in a `.drone.yml.sig` file which must be committed to your repo. 
+
+**N.B** Every time you make a change to `.drone.yml`, the signature must be updated and committed or builds will not run.
+
+The official documentation on secrets can be found [here](http://readme.drone.io/0.5/secrets/).
