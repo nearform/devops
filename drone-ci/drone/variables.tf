@@ -21,7 +21,7 @@ variable "aws_security_groups" {
 }
 
 variable "aws_iam_profile" {
-  default = false
+  default = ""
 }
 
 variable "private_ip" {
