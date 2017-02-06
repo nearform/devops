@@ -12,6 +12,7 @@ module "drone" {
   # instance settings
   instance_type = "t2.small"
   aws_base_ami = "ami-82cf0aed" ## expects an Ubuntu 16.04 AMI id
+  aws_iam_profile = "my-aws-profile-name" ## not mandatory
   instance_tag = "my-drone-ec2"
   # external volume settings
   volume_type = "gp2"

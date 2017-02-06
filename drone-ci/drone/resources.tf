@@ -14,6 +14,7 @@ resource "aws_instance" "drone" {
   availability_zone = "${var.aws_zone}"
   subnet_id = "${var.aws_subnet}"
   vpc_security_group_ids = ["${var.aws_security_groups}"]
+  iam_instance_profile = "${var.aws_iam_profile}"
   private_ip = "${var.private_ip}"
   tags {
       Name = "${var.instance_tag}"

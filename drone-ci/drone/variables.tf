@@ -20,6 +20,10 @@ variable "aws_security_groups" {
   default = []
 }
 
+variable "aws_iam_profile" {
+  default = false
+}
+
 variable "private_ip" {
   default = ""
 }
