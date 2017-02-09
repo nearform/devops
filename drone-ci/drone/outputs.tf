@@ -7,11 +7,7 @@ output "drone-ip" {
 }
 
 output "reprovision-command" {
-  value = "ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i ${var.ansible_inventory_path} --private-key ${var.private_key_path} ${path.module}/ansible/play.yml"
-}
-
-output "sg-id" {
-  value = "${aws_security_group.drone.id}"
+  value = "ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i ${var.ansible_inventory_path} --private-key ${var.ssh_private_key} ${path.module}/ansible/play.yml"
 }
 
 output "instance-id" {

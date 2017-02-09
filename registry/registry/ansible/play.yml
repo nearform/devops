@@ -1,10 +1,9 @@
 ---
-- hosts: all
+- hosts: registry
   remote_user: ubuntu
   gather_facts: False
   vars_files:
     - vars.yml
-  # hack for ubuntu 16.04
   vars:
     ansible_python_interpreter: "/usr/bin/python2.7"
   tasks:
@@ -14,25 +13,10 @@
         wait_for host="{{ inventory_hostname }}"
         port=22
         state=started
-    - name: update package list
-      raw: sudo apt-get -y update
-      register: result
-      until: result|success
-      retries: 10
-    - name: install python2
-      raw: sudo apt-get update && sudo apt-get -y install python2.7
-      register: result
-      until: result|success
-      retries: 10
-    - name: install aptitude
-      raw: sudo apt-get update && sudo apt-get -y install aptitude
-      register: result
-      until: result|success
-      retries: 10
-    - name: upgrade to latest
-      become: yes
-      apt:
-        upgrade: safe
+    - name: update apt cache
+      raw: "sudo apt-get update"
+    - name: install python 2.7 and aptitude
+      raw: "sudo apt-get install -qq python2.7 aptitude"
     - name: get instance hostname
       shell:
         cmd: cat /etc/hostname
@@ -98,57 +82,73 @@
         groups: docker
         name: ubuntu
       become: yes
-    - name: create drone directory
+    - name: create ssl certs folder
       become: yes
       file:
-        path: "{{ drone_local_dir_path }}"
-        state: directory
-    - name: create drone data directory
+        path: "{{ ssl_certs_dir_path }}"
+        state: "directory"
+    - name: update permissions on ssl certs folder
       become: yes
       file:
-        path: "{{ drone_local_dir_path }}/data"
+        path: "{{ ssl_certs_dir_path }}"
+        mode: "g=rwx,o=rwx"
+    - name: copy ssl certficate
+      become: yes
+      copy:
+        src: "{{ ssl_crt_file }}"
+        dest: "{{ ssl_certs_dir_path }}/registry-certificate.crt"
+    - name: copy ssl key
+      become: yes
+      copy:
+        src: "{{ ssl_key_file }}"
+        dest: "{{ ssl_certs_dir_path }}/registry-key.key"
+    - name: create registry directory
+      become: yes
+      file:
+        path: "{{ registry_local_dir_path }}"
         state: directory
-    - name: copy drone config file
+        owner: ubuntu
+        group: ubuntu
+    - name: create auth directory
       become: yes
-      template:
-        src: ./dronerc_tmpl.j2
-        dest: "{{ drone_local_dir_path }}/dronerc"
-    - name: copy drone agent config file
+      file:
+        path: "{{ auth_local_dir_path }}"
+        state: directory
+        owner: ubuntu
+        group: ubuntu
+    - name: generate initial auth
       become: yes
-      template:
-        src: ./drone_agentrc_tmpl.j2
-        dest: "{{ drone_local_dir_path }}/drone_agentrc"
-    - name: pull drone image
+      command: "docker run --entrypoint htpasswd registry:2 -Bbn {{ registry_user }} {{ registry_password }}"
+      register: auth_result
+    - name: save auth
+      copy:
+        content: "{{ auth_result.stdout }}"
+        dest: "{{ auth_local_dir_path }}/passwd"
+    - name: pull registry image
       become: yes
       docker_image:
-        name: drone/drone
-        tag: 0.5
+        name: registry
+        tag: 2
         state: present
-    - name: run drone container
+    - name: run registry container
       become: yes
       docker_container:
-        name: drone-server
-        network_mode: host
-        image: drone/drone:0.5
+        name: registry
+        image: registry:2
         pull: yes
         restart_policy: always
         restart: yes
+        env:
+          REGISTRY_HTTP_TLS_CERTIFICATE: "{{ ssl_certs_dir_path }}/registry-certificate.crt"
+          REGISTRY_HTTP_TLS_KEY: "{{ ssl_certs_dir_path }}/registry-key.key"
+          REGISTRY_AUTH: "htpasswd"
+          REGISTRY_AUTH_HTPASSWD_REALM: "Registry Realm"
+          REGISTRY_AUTH_HTPASSWD_PATH: "{{ auth_local_dir_path }}/passwd"
+          REGISTRY_HTTP_SECRET: "{{ registry_http_secret }}"
         volumes:
-          - "{{ drone_local_dir_path }}/data:/var/lib/drone"
+          - "{{ registry_local_dir_path }}:/var/lib/registry"
           - /var/run/docker.sock:/var/run/docker.sock
-        env_file: "{{ drone_local_dir_path }}/dronerc"
+          - "{{ ssl_certs_dir_path }}:{{ ssl_certs_dir_path }}"
+          - "{{ auth_local_dir_path }}:{{ auth_local_dir_path }}"
         published_ports:
-          - 8000:8000
-    - name: run drone agent
-      become: yes
-      docker_container:
-        name: drone-agent
-        network_mode: host
-        command: agent
-        image: drone/drone:0.5
-        pull: yes
-        restart_policy: always
-        restart: yes
-        volumes:
-          - /var/run/docker.sock:/var/run/docker.sock
-        env_file: "{{ drone_local_dir_path }}/drone_agentrc"
+          - 5000:5000

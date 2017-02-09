@@ -1,0 +1,27 @@
+---
+# docker
+docker_apt_key_id: "58118E89F3A912897C070ADBF76221572C52609D"
+docker_apt_key_url: "hkp://p80.pool.sks-keyservers.net:80"
+docker_apt_repo_url: "https://apt.dockerproject.org/repo ubuntu-xenial main"
+
+# apt packages
+apt_packages:
+  - apt-transport-https
+  - ca-certificates
+  - htop
+  - docker-engine
+  - python-dev
+  - python-pip
+
+# registry
+system_data_dir: "/data"
+registry_local_dir_path: "{{ system_data_dir }}/registry"
+auth_local_dir_path: "{{ system_data_dir }}/auth"
+registry_http_secret: "secret"
+
+# registry
+ssl_crt_file: "{{ lookup('env', 'REGISTRY_CRT_FILE') }}"
+ssl_key_file: "{{ lookup('env', 'REGISTRY_KEY_FILE') }}"
+ssl_certs_dir_path: "/data/certs"
+registry_user: docker
+registry_password: $ecret

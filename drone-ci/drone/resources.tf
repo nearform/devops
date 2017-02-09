@@ -1,77 +1,29 @@
-
-
-provider "aws" {
-  access_key = "${var.aws_access_key}"
-  secret_key = "${var.aws_secret_key}"
-  region = "${var.aws_region}"
-}
-
-resource "aws_key_pair" "user" {
-  key_name = "${var.keypair_name}"
-  public_key = "${var.keypair_key}"
-}
-
-resource "aws_security_group" "drone" {
-  name = "${var.aws_security_group_name}"
-  description = "${var.aws_security_group_name}"
-  vpc_id = "${var.drone_vpc_id}"
-  ingress {
-    from_port = 22
-    to_port = 22
-    protocol = "tcp"
-    cidr_blocks = [
-     "0.0.0.0/0"
-    ]
-  }
-  ingress {
-    from_port = 80
-    to_port = 80
-    protocol = "tcp"
-    cidr_blocks = [
-     "0.0.0.0/0"
-    ]
-  }
-  egress {
-    from_port = 0
-    to_port = 0
-    protocol = "-1"
-    cidr_blocks = [
-      "0.0.0.0/0"
-    ]
-  }
-
+resource "aws_ebs_volume" "volume" {
+  availability_zone = "${var.aws_zone}"
+  type = "${var.volume_type}"
+  size = "${var.volume_size}"
   tags {
-    Name = "${var.aws_security_group_name}"
-  }
-}
-
-resource "aws_ebs_volume" "drone-volume" {
-  availability_zone = "${data.aws_availability_zones.available-zones.names[0]}"
-  type = "${var.aws_volume_type}"
-  size = "${var.drone_volume_size}"
-  tags {
-    Name = "${var.aws_volume_tag}"
+    Name = "${var.volume_tag}"
   }
 }
 
 resource "aws_instance" "drone" {
-  key_name = "${var.keypair_name}"
+  key_name = "${var.ssh_key_name}"
   ami = "${var.aws_base_ami}"
-  instance_type = "${var.aws_instance_type}"
-  availability_zone = "${data.aws_availability_zones.available-zones.names[0]}"
-  subnet_id = "${var.drone_subnet_id}"
-  vpc_security_group_ids = [
-    "${aws_security_group.drone.id}"
-  ]
-  private_ip = "${var.drone_private_ip}"
+  instance_type = "${var.instance_type}"
+  availability_zone = "${var.aws_zone}"
+  subnet_id = "${var.aws_subnet}"
+  vpc_security_group_ids = ["${var.aws_security_groups}"]
+  iam_instance_profile = "${var.aws_iam_profile}"
+  private_ip = "${var.private_ip}"
   tags {
-      Name = "${var.aws_instance_tag}"
+      Name = "${var.instance_tag}"
   }
 }
 
 resource "aws_volume_attachment" "default" {
   device_name = "/dev/sdh"
-  volume_id = "${aws_ebs_volume.drone-volume.id}"
+  volume_id = "${aws_ebs_volume.volume.id}"
   instance_id = "${aws_instance.drone.id}"
   force_detach = true
 
@@ -79,11 +31,11 @@ resource "aws_volume_attachment" "default" {
     command = <<EOF
       if [ 1 -eq ${var.use_private_ip_to_provision} ]
       then
-        echo -e "[drone]\n${aws_instance.drone.private_ip}" > ${var.ansible_inventory_path};
+        echo "${aws_instance.drone.private_ip}" > ${var.ansible_inventory_path};
       else
-        echo -e "[drone]\n${aws_instance.drone.public_ip}" > ${var.ansible_inventory_path};
+        echo "${aws_instance.drone.public_ip}" > ${var.ansible_inventory_path};
       fi
-      ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i ${var.ansible_inventory_path} --private-key ${var.private_key_path} ${path.module}/ansible/play.yml
+      ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i ${var.ansible_inventory_path} --private-key ${var.ssh_private_key} ${path.module}/ansible/play.yml
     EOF
   }
 }
