@@ -6,3 +6,4 @@ vault/ansible/all_ips
 vault/ansible/inventory
 vault/ansible/master_ip
 vault/ansible/*.retry
+example-test.tf
