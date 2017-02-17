@@ -1,0 +1,112 @@
+---
+- hosts: all
+  remote_user: ubuntu
+  gather_facts: False
+  vars:
+    ansible_python_interpreter: "/usr/bin/python2.7"
+  tasks:
+    - name: waiting for server to accept SSH connections
+      local_action:
+        wait_for host="{{ inventory_hostname }}"
+        port=22
+        state=started
+    - include: ./tasks/fix.yml
+    - include: ./tasks/install_docker.yml
+    - name: pull needed images
+      become: yes
+      docker_image:
+        name: "{{ item }}"
+      with_items:
+        - consul
+        - vault
+
+- hosts: master
+  remote_user: ubuntu
+  vars_files:
+    - vars.yml
+  tasks:
+    - name: copy config
+      template:
+        src: ./templates/master_config.json.j2
+        dest: "~/consul_config.json"
+    - name: check master ip
+      shell:
+        cmd: "echo \"{{ ansible_default_ipv4.address }}\" > ~/ip"
+    - name: save master ip
+      fetch:
+        src: ~/ip
+        dest: "./master_ip"
+        flat: yes
+    - name: restart consul
+      become: yes
+      docker_container:
+        name: consul
+        image: consul
+        state: started
+        restart: yes
+        network_mode: host
+        command: agent -server -ui
+        volumes:
+          /home/ubuntu/consul_config.json:/consul/config/local.json
+        env:
+          CONSUL_BIND_INTERFACE: "{{ interface_name }}"
+
+- hosts: slaves
+  remote_user: ubuntu
+  vars_files:
+    - vars.yml
+  tasks:
+    - name: register master ip
+      set_fact:
+        consul_master_ip: "{{ lookup('file', './master_ip') }}"
+    - name: create random node name
+      set_fact:
+        random_node_name: "{{ ansible_default_ipv4.address | to_uuid }}"
+    - name: copy config
+      template:
+        src: ./templates/slave_config.json.j2
+        dest: "~/consul_config.json"
+    - name: restart consul
+      become: yes
+      docker_container:
+        name: consul
+        image: consul
+        state: started
+        restart: yes
+        network_mode: host
+        command: agent -server -ui
+        volumes:
+          /home/ubuntu/consul_config.json:/consul/config/local.json
+        env:
+          CONSUL_BIND_INTERFACE: "{{ interface_name }}"
+    - name: register with master
+      become: yes
+      raw: "docker exec -it consul consul join {{ consul_master_ip }}"
+
+- hosts: all
+  remote_user: ubuntu
+  vars_files:
+     - vars.yml
+  tasks:
+    - name: waiting for server to accept SSH connections
+      local_action:
+        wait_for host="{{ inventory_hostname }}"
+        port=22
+        state=started
+    - name: copy config
+      template:
+        src: ./templates/vault_config.json.j2
+        dest: "~/vault_config.json"
+    - name: start vault
+      become: yes
+      docker_container:
+        name: vault
+        image: vault
+        state: started
+        restart: yes
+        network_mode: host
+        command: server
+        capabilities:
+          - IPC_LOCK
+        volumes:
+          /home/ubuntu/vault_config.json:/vault/config/local.json
