@@ -3,7 +3,7 @@ output "vault-public-ips" {
 }
 
 output "vault-private-ips" {
-  value = "${join(",", aws_instance.cluster.*.public_ip)}"
+  value = "${join(",", aws_instance.cluster.*.private_ip)}"
 }
 
 output "vault-instance-ids" {
