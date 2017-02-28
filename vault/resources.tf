@@ -22,6 +22,8 @@ resource "aws_instance" "cluster" {
   availability_zone = "${element(keys(var.aws_subnets_map), count.index)}"
   associate_public_ip_address = "${1 - var.use_private_ip_to_provision}"
   vpc_security_group_ids = ["${var.aws_security_groups}"]
+  iam_instance_profile = "${var.aws_iam_profile}"
+  user_data = "${var.user_data}"
   tags {
     Name = "${var.cluster_name}"
   }

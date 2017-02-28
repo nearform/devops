@@ -25,3 +25,9 @@ variable "aws_base_ami" {
 variable "use_private_ip_to_provision" {
   default = 0
 }
+variable "user_data" {
+  default = ""
+}
+variable "aws_iam_profile" {
+  default = ""
+}
