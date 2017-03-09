@@ -40,3 +40,7 @@ variable "volume_type" {
 variable "volume_size" {
   default = 50
 }
+
+variable "encryption_key" {
+  default = ""
+}
