@@ -31,3 +31,12 @@ variable "user_data" {
 variable "aws_iam_profile" {
   default = ""
 }
+
+variable "volume_type" {
+  type = "string"
+  default = "gp2"
+}
+
+variable "volume_size" {
+  default = 50
+}

@@ -11,6 +11,7 @@
         port=22
         state=started
     - include: ./tasks/fix.yml
+    - include: ./tasks/mount_docker_data.yml
     - include: ./tasks/install_docker.yml
     - name: pull needed images
       become: yes
