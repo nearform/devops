@@ -1,0 +1,18 @@
+- name: check external volume fs type
+  become: yes
+  filesystem:
+    fstype: ext4
+    dev: /dev/xvdh
+- name: mount data disk
+  become: yes
+  mount:
+    name: "{{ docker_data_dir }}"
+    src: /dev/xvdh
+    fstype: ext4
+    opts: rw
+    state: mounted
+- name: clean data folder
+  become: yes
+  shell:
+    cmd: "rm -rf {{ docker_data_dir }}/*"
+  ignore_errors: yes

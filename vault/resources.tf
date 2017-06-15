@@ -6,7 +6,19 @@ resource "null_resource" "cleanup" {
       rm -f $ANSIBLE_PATH/all_ips
       touch $ANSIBLE_PATH/all_ips
       touch $ANSIBLE_PATH/inventory
-    EOF
+EOF
+  }
+}
+
+resource "aws_ebs_volume" "volume" {
+  count = "${length(keys(var.aws_subnets_map))}"
+  availability_zone = "${element(keys(var.aws_subnets_map), count.index)}"
+  type = "${var.volume_type}"
+  size = "${var.volume_size}"
+  encrypted = "${var.encryption_key != "" ? true : false}"
+  kms_key_id = "${var.encryption_key}"
+  tags {
+    Name = "${var.cluster_name}-volume-${count.index}"
   }
 }
 
@@ -29,10 +41,18 @@ resource "aws_instance" "cluster" {
   }
 }
 
+resource "aws_volume_attachment" "volume_attachment" {
+  count = "${length(keys(var.aws_subnets_map))}"
+  device_name = "/dev/sdh"
+  volume_id = "${element(aws_ebs_volume.volume.*.id, count.index)}"
+  instance_id = "${element(aws_instance.cluster.*.id, count.index)}"
+  force_detach = true
+}
+
 resource "null_resource" "get_ips" {
   count = "${length(keys(var.aws_subnets_map))}"
   depends_on = [
-    "aws_instance.cluster"
+    "aws_volume_attachment.volume_attachment"
   ]
   provisioner "local-exec" {
     command = <<EOF
@@ -44,7 +64,7 @@ resource "null_resource" "get_ips" {
       else
         echo "${element(aws_instance.cluster.*.public_ip, count.index)}" >> $ANSIBLE_PATH/all_ips
       fi
-    EOF
+EOF
   }
 }
 
@@ -59,7 +79,7 @@ resource "null_resource" "build_inventory" {
       echo "$(head -n 1 $ANSIBLE_PATH/all_ips)" >> $ANSIBLE_PATH/inventory
       echo "[slaves]" >> $ANSIBLE_PATH/inventory
       echo "$(tail -n +2 $ANSIBLE_PATH/all_ips)" >> $ANSIBLE_PATH/inventory
-    EOF
+EOF
   }
 }
 
@@ -72,6 +92,6 @@ resource "null_resource" "vault_setup" {
       export ANSIBLE_PATH="${path.module}/ansible"
       export ANSIBLE_HOST_KEY_CHECKING=False
       ansible-playbook -i $ANSIBLE_PATH/inventory --private-key ${var.ssh_private_key} $ANSIBLE_PATH/play.yml
-    EOF
+EOF
   }
 }

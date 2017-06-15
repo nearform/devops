@@ -2,17 +2,17 @@
   raw: sudo apt-get -y update
   register: result
   until: result|success
-  retries: 10
+  retries: 20
 - name: install python2
   raw: sudo apt-get update && sudo apt-get -y install python2.7
   register: result
   until: result|success
-  retries: 10
+  retries: 20
 - name: install aptitude
   raw: sudo apt-get update && sudo apt-get -y install aptitude
   register: result
   until: result|success
-  retries: 10
+  retries: 20
 - name: get instance hostname
   shell:
     cmd: cat /etc/hostname

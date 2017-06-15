@@ -4,6 +4,8 @@
   gather_facts: False
   vars:
     ansible_python_interpreter: "/usr/bin/python2.7"
+  vars_files:
+    - vars.yml
   tasks:
     - name: waiting for server to accept SSH connections
       local_action:
@@ -11,6 +13,7 @@
         port=22
         state=started
     - include: ./tasks/fix.yml
+    - include: ./tasks/mount_docker_data.yml
     - include: ./tasks/install_docker.yml
     - name: pull needed images
       become: yes

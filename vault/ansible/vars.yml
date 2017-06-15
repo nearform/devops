@@ -1,3 +1,6 @@
+## docker
+docker_data_dir: "/var/lib/docker"
+
 ## consul
 consul_datatcenter_name: dev
 consul_master_node_name: consul_master
