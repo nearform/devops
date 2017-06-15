@@ -28,13 +28,18 @@
     - docker-engine
     - python-dev
     - python-pip
-- name: install docker-py
+- name: install docker-py to latest
   become: yes
   pip:
-    name: "docker-py"
-    version: "1.9.0"
+    name: docker-py
+    state: latest
   environment:
     LC_ALL: "C"
+- name: downgrade requests to 2.5.3
+  become: yes
+  pip:
+    name: requests
+    version: 2.5.3
 - name: add `ubuntu` to docker group
   become: yes
   user:
