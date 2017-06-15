@@ -42,17 +42,8 @@
         flat: yes
     - name: restart consul
       become: yes
-      docker_container:
-        name: consul
-        image: consul
-        state: started
-        restart: yes
-        network_mode: host
-        command: agent -server -ui
-        volumes:
-          /home/ubuntu/consul_config.json:/consul/config/local.json
-        env:
-          CONSUL_BIND_INTERFACE: "{{ interface_name }}"
+      shell:
+        cmd: "docker run -d --name consul -e CONSUL_BIND_INTERFACE={{ interface_name }} -v /home/ubuntu/consul_config.json:/consul/config/local.json --network=host consul agent -server -ui"
 
 - hosts: slaves
   remote_user: ubuntu
@@ -71,17 +62,8 @@
         dest: "~/consul_config.json"
     - name: restart consul
       become: yes
-      docker_container:
-        name: consul
-        image: consul
-        state: started
-        restart: yes
-        network_mode: host
-        command: agent -server -ui
-        volumes:
-          /home/ubuntu/consul_config.json:/consul/config/local.json
-        env:
-          CONSUL_BIND_INTERFACE: "{{ interface_name }}"
+      shell:
+        cmd: "docker run -d --name consul -e CONSUL_BIND_INTERFACE={{ interface_name }} -v /home/ubuntu/consul_config.json:/consul/config/local.json --network=host consul agent -server -ui"
     - name: register with master
       become: yes
       raw: "docker exec -it consul consul join {{ consul_master_ip }}"
@@ -102,14 +84,5 @@
         dest: "~/vault_config.json"
     - name: start vault
       become: yes
-      docker_container:
-        name: vault
-        image: vault
-        state: started
-        restart: yes
-        network_mode: host
-        command: server
-        capabilities:
-          - IPC_LOCK
-        volumes:
-          /home/ubuntu/vault_config.json:/vault/config/local.json
+      shell:
+        cmd: "docker run -d --name vault --network=host -v /home/ubuntu/vault_config.json:/vault/config/local.json --cap-add=IPC_LOCK vault server"
