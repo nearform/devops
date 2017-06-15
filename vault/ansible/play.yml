@@ -19,6 +19,9 @@
       become: yes
       shell:
         cmd: "docker pull {{ item }}"
+      with_items:
+        - consul
+        - vault
 
 - hosts: master
   remote_user: ubuntu
