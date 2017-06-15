@@ -17,11 +17,8 @@
     - include: ./tasks/install_docker.yml
     - name: pull needed images
       become: yes
-      docker_image:
-        name: "{{ item }}"
-      with_items:
-        - consul
-        - vault
+      shell:
+        cmd: "docker pull {{ item }}"
 
 - hosts: master
   remote_user: ubuntu
