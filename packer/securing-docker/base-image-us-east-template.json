@@ -1,0 +1,44 @@
+{
+  "variables": {
+    "aws_access_key": "",
+    "aws_secret_key": "",
+    "aws_region": "",
+    "ubuntu_source_ami": ""
+  },
+  "builders": [
+    {
+      "type": "amazon-ebs",
+      "access_key": "{{user `aws_access_key`}}",
+      "secret_key": "{{user `aws_secret_key`}}",
+      "region": "{{user `aws_region`}}",
+      "source_ami": "{{user `ubuntu_source_ami`}}",
+      "instance_type": "t2.micro",
+      "ssh_username": "ubuntu",
+      "ami_name": "ubuntu-{{timestamp}}",
+      "ami_block_device_mappings": [
+        {
+          "volume_type" : "gp2",
+          "device_name" : "/dev/sdf",
+          "delete_on_termination" : false,
+          "volume_size" : 1
+        }
+      ]
+    }
+  ],
+  "provisioners": [
+    {
+      "type": "file",
+      "source": "./files/daemon.json",
+      "destination": "/tmp/daemon.json"
+    },
+    {
+      "type": "shell",
+      "scripts": [
+        "./scripts/volume.sh",
+        "./scripts/docker-setup.sh",
+        "./scripts/docker-security.sh",
+        "./scripts/auditd-setup.sh"
+      ]
+    }
+  ]
+}
