@@ -15,6 +15,14 @@
       "instance_type": "t2.micro",
       "ssh_username": "ubuntu",
       "ami_name": "ubuntu-{{timestamp}}",
+      "launch_block_device_mappings": [
+        {
+          "volume_type" : "gp2",
+          "device_name" : "/dev/sdf",
+          "delete_on_termination" : false,
+          "volume_size" : 1
+        }
+      ],
       "ami_block_device_mappings": [
         {
           "volume_type" : "gp2",
