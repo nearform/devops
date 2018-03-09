@@ -1,4 +1,6 @@
 resource "aws_ebs_volume" "volume" {
+  count = "${var.enable ? 1 : 0}"
+  
   availability_zone = "${var.aws_zone}"
   type = "${var.volume_type}"
   size = "${var.volume_size}"
@@ -8,6 +10,8 @@ resource "aws_ebs_volume" "volume" {
 }
 
 resource "aws_instance" "drone" {
+  count = "${var.enable ? 1 : 0}"
+
   key_name = "${var.ssh_key_name}"
   ami = "${var.aws_base_ami}"
   instance_type = "${var.instance_type}"
@@ -22,6 +26,8 @@ resource "aws_instance" "drone" {
 }
 
 resource "aws_volume_attachment" "default" {
+  count = "${var.enable ? 1 : 0}"
+
   device_name = "/dev/sdh"
   volume_id = "${aws_ebs_volume.volume.id}"
   instance_id = "${aws_instance.drone.id}"

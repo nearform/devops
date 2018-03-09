@@ -1,4 +1,10 @@
 ## aws
+variable "enable" {
+  description = "Enable conditionally the module"
+  type        = "string"
+  default     = "1"  
+}
+
 variable "aws_subnet" {
   type = "string"
   default = ""
